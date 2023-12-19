@@ -1,42 +1,31 @@
+import re
+import nltk
+import string
+import unicodedata
 import numpy as np
 import pandas as pd
-import os
-import glob
-import unicodedata
-import nltk
-import re
-from nltk import wordpunct_tokenize
-from nltk.corpus import stopwords
-from nltk.stem import PorterStemmer
-from nltk.stem import WordNetLemmatizer
-from collections import Counter
-import matplotlib.cm as cm
-from matplotlib import rcParams
-from nltk.tokenize import RegexpTokenizer
-import matplotlib.pyplot as plt
-import pandas
-import seaborn as sns 
-import string
-from nltk.stem import WordNetLemmatizer
-from sklearn.feature_extraction.text import CountVectorizer
-import scipy.sparse as sp
-from keras.preprocessing.text import Tokenizer
-from keras.layers import Embedding
-from keras.preprocessing.sequence import pad_sequences
-from sklearn.model_selection import train_test_split
-from keras import regularizers
-from keras.models import Sequential
-from keras import layers
-from keras.optimizers import RMSprop,Adam
-from keras.preprocessing.text import Tokenizer
-from keras.preprocessing.sequence import pad_sequences
-from keras import regularizers
-from keras import backend as K
-from keras.callbacks import ModelCheckpoint
-
-
 import tensorflow as tf
-print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
+from keras import layers
+import matplotlib.cm as cm
+import matplotlib.pyplot as plt
+from matplotlib import rcParams
+from collections import Counter
+from nltk.corpus import stopwords
+from keras.models import Sequential
+from nltk import wordpunct_tokenize
+from keras.models import load_model
+from nltk.stem.isri import ISRIStemmer
+from nltk.tokenize import RegexpTokenizer
+from sklearn.metrics import accuracy_score
+from keras.callbacks import ModelCheckpoint
+from keras.preprocessing.text import Tokenizer
+from keras.preprocessing.text import Tokenizer
+from tensorflow.keras.utils import to_categorical
+from sklearn.model_selection import train_test_split
+from keras.preprocessing.sequence import pad_sequences
+
+
+print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 
 
 pd.set_option('display.max_columns', None)
@@ -80,6 +69,7 @@ def remove_punctuations(word):
 
 def preprocess_review(sentence):
     
+    sentence = str(sentence)
     words = wordpunct_tokenize(sentence)
     non_english_words = [word for word in words if not is_english_word(word)]
     cleaned_sentence = ' '.join(non_english_words)
@@ -97,6 +87,9 @@ def preprocess_dataframe(df, review_col=review_col):
     df[review_col] = df[review_col].apply(preprocess_review)
     df[review_col] = df[review_col].apply(tokenizer.tokenize)
     df[review_col] = df[review_col].apply(lambda x: [item for item in x if item not in stopwords_list_arabic])
+
+    arabic_stemmer = ISRIStemmer()
+    df[review_col] = df[review_col].apply(lambda x: [arabic_stemmer.stem(word) for word in x])
 
 
 def global_preprocess_sentence(path,isCSV) :
